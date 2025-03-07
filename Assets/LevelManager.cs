@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using UnityEditorInternal;
+using System.Linq;
 
 public class LevelManager : MonoBehaviour
 {
@@ -30,16 +30,73 @@ public class LevelManager : MonoBehaviour
         foreach (LevelData level in levels)
         {
             Button button = Instantiate(levelButtonPrefab, buttonContainer);
-            button.GetComponentInChildren<Text>().text = $"Level {level.levelNumber}";
-            button.interactable = !level.isLocked;
 
-            // to be done: click event
-            int levelNum = level.levelNumber;
-            // here:
+            Text levelText = button.transform.Find("Level").GetComponent<Text>();
+            Text levelNumberText = button.transform.Find("LevelText").GetComponent<Text>();
+            Text lockedText = button.transform.Find("Locked").GetComponent<Text>();
+            Transform lockImage = button.transform.Find("LockImage"); 
+
+            if (level.isLocked)
+            {
+                
+                if (lockImage != null) lockImage.gameObject.SetActive(true);
+                if (lockedText != null) lockedText.gameObject.SetActive(true);
+                if (levelText != null) levelText.gameObject.SetActive(false);
+                if (levelNumberText != null) levelNumberText.gameObject.SetActive(false);
+
+                foreach (var star in button.GetComponentsInChildren<Image>(true)
+                                           .Where(img => img.gameObject.CompareTag("Star")))
+                {
+                    star.gameObject.SetActive(false);
+                }
+
+                button.interactable = false; 
+            }
+            else
+            {
+                
+                if (lockImage != null) lockImage.gameObject.SetActive(false);
+                if (lockedText != null) lockedText.gameObject.SetActive(false);
+                if (levelText != null) levelText.gameObject.SetActive(true);
+                if (levelNumberText != null)
+                {
+                    levelNumberText.gameObject.SetActive(true);
+                    levelNumberText.text = level.levelNumber.ToString();
+                }
+
+                foreach (var star in button.GetComponentsInChildren<Image>(true)
+                                           .Where(img => img.gameObject.CompareTag("Star")))
+                {
+                    star.gameObject.SetActive(true);
+                }
+
+                // Set star rating properly
+                SetStarRating(button, level.rating);
+
+                int levelNum = level.levelNumber;
+
+                // once levels are made:
+                //button.onClick.AddListener(() => LoadLevel(levelNum));
+            }
         }
     }
 
-    // to be done: load level func --> goes with click event in CreateLevelButtons()
+    void SetStarRating(Button button, int rating)
+    {
+        Color yellow = Color.yellow;
+        Color grey = Color.grey;
+
+        Image[] stars = button.GetComponentsInChildren<Image>(true)
+                          .Where(img => img.gameObject.CompareTag("Star"))
+                          .ToArray();
+
+        for (int i = 0; i < stars.Length; i++)
+        {
+            stars[i].color = (i < rating) ? yellow : grey;
+        }
+
+    }
+
 
 
 }
