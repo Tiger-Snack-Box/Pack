@@ -27,9 +27,12 @@ public class LevelManager : MonoBehaviour
 
     void CreateLevelButtons()
     {
+        Color lockedColor = new Color32(242, 112, 89, 255);
+
         foreach (LevelData level in levels)
         {
             Button button = Instantiate(levelButtonPrefab, buttonContainer);
+            Image buttonBackground = button.GetComponent<Image>();
 
             Text levelText = button.transform.Find("Level").GetComponent<Text>();
             Text levelNumberText = button.transform.Find("LevelText").GetComponent<Text>();
@@ -43,6 +46,10 @@ public class LevelManager : MonoBehaviour
                 if (lockedText != null) lockedText.gameObject.SetActive(true);
                 if (levelText != null) levelText.gameObject.SetActive(false);
                 if (levelNumberText != null) levelNumberText.gameObject.SetActive(false);
+                if (buttonBackground != null)
+                {
+                    buttonBackground.color = lockedColor;
+                }
 
                 foreach (var star in button.GetComponentsInChildren<Image>(true)
                                            .Where(img => img.gameObject.CompareTag("Star")))
