@@ -6,13 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/next-page.unity
+    path: Assets/Scenes/nextPage.unity
     guid: fbf2b911cb251ea4499e20289cc31581
   - enabled: 1
-    path: Assets/Scenes/start-screen.unity
+    path: Assets/Scenes/playNowScreen.unity
     guid: 6460b05d7b0f0d64eafc05a4e0a59ed5
   - enabled: 1
-    path: Assets/Scenes/play-now-screen.unity
+    path: Assets/Scenes/start-screen.unity
     guid: 7d7bc3c35c2dd0144b5afb6427bd88af
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
