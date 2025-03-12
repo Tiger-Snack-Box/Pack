@@ -7,12 +7,12 @@ public class HealthBarDecay : MonoBehaviour
     public Slider slider;
     private float currentHealth;
 
-    // Set the initial maximum health and start the coroutine to decrease health
+    // Set the initial maximum health and start the coroutine to increase health
     void Start()
     {
         SetMaxHealth(100f);  // Set the max health to 100
-        currentHealth = 100f;  // Start with 100 health
-        StartCoroutine(DecreaseHealthOverTime());  // Start the health decay coroutine
+        currentHealth = 0f;  // Start with 0 health
+        StartCoroutine(IncreaseHealthOverTime());  // Start the health increase coroutine
     }
 
     // Set the max health and initial slider value
@@ -22,19 +22,19 @@ public class HealthBarDecay : MonoBehaviour
         slider.value = health;
     }
 
-    // Decrease health by 0.1 every 0.01 seconds
-    private IEnumerator DecreaseHealthOverTime()
+    // Increase health by 0.1 every 0.01 seconds
+    private IEnumerator IncreaseHealthOverTime()
     {
-        while (currentHealth > 0f)
+        while (currentHealth < slider.maxValue)
         {
-            yield return new WaitForSeconds(0.005f);  // Wait for 0.01 seconds
-            currentHealth -= 0.1f;  // Decrease health by 0.1
+            yield return new WaitForSeconds(0.001f);  // Wait for 0.01 seconds
+            currentHealth += 0.1f;  // Increase health by 0.1
             SetHealth(currentHealth);  // Update the slider value
 
-            if (currentHealth <= 0f)
+            if (currentHealth >= slider.maxValue)
             {
-                currentHealth = 0f;  // Ensure health doesn't go below 0
-                SetHealth(currentHealth);  // Update slider value when health reaches 0
+                currentHealth = slider.maxValue;  // Ensure health doesn't exceed max
+                SetHealth(currentHealth);  // Update slider value when health reaches max
             }
         }
     }
