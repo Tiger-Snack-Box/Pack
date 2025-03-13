@@ -21,7 +21,6 @@ public class WorldUIManager : MonoBehaviour
         DisplayWorlds();
     }
 
-
     // Method to display worlds as buttons
     void DisplayWorlds()
     {
@@ -40,6 +39,18 @@ public class WorldUIManager : MonoBehaviour
             // Get the Button and TMP_Text components from the instantiated button
             Button worldButton = buttonObj.GetComponent<Button>();
             TMP_Text buttonText = buttonObj.GetComponentInChildren<TMP_Text>();
+
+            // Get RectTransform of button and text
+            RectTransform buttonRectTransform = worldButton.GetComponent<RectTransform>();
+            RectTransform textRectTransform = buttonText.GetComponent<RectTransform>();
+
+            // Set button position and anchor values
+            buttonRectTransform.anchorMin = new Vector2(0, 0);
+            buttonRectTransform.anchorMax = new Vector2(1, 0);
+            buttonRectTransform.anchoredPosition = new Vector2(-300, buttonRectTransform.anchoredPosition.y);
+
+            // Adjust the position of the text within the button
+            textRectTransform.localPosition = new Vector3(-300, 600, 0); // Change X, Y, Z values
 
             // Set the button's text to show the world name and percentage complete
             buttonText.text = $"{world.WorldName} - {world.PercentageComplete}% Complete";
