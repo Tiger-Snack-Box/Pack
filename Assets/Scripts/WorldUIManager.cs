@@ -24,6 +24,7 @@ public class WorldUIManager : MonoBehaviour
     // Method to display worlds as buttons
     void DisplayWorlds()
     {
+
         // Clear existing buttons to prevent duplicates
         foreach (Transform child in worldListContainer)
         {
@@ -44,13 +45,18 @@ public class WorldUIManager : MonoBehaviour
             RectTransform buttonRectTransform = worldButton.GetComponent<RectTransform>();
             RectTransform textRectTransform = buttonText.GetComponent<RectTransform>();
 
+            //change text size to 100px
+            buttonText.fontSize = 20;
+            // align text to the left
+            buttonText.alignment = TextAlignmentOptions.Left;
+
             // Set button position and anchor values
-            buttonRectTransform.anchorMin = new Vector2(0, 0);
-            buttonRectTransform.anchorMax = new Vector2(1, 0);
-            buttonRectTransform.anchoredPosition = new Vector2(-300, buttonRectTransform.anchoredPosition.y);
+            //buttonRectTransform.anchorMin = new Vector2(0, 0);
+            //buttonRectTransform.anchorMax = new Vector2(1, 0);
+            //buttonRectTransform.anchoredPosition = new Vector2(-300, buttonRectTransform.anchoredPosition.y);
 
             // Adjust the position of the text within the button
-            textRectTransform.localPosition = new Vector3(-300, 600, 0); // Change X, Y, Z values
+            //textRectTransform.localPosition = new Vector3(0, 0, 0); // Change X, Y, Z values
 
             // Set the button's text to show the world name and percentage complete
             buttonText.text = $"{world.WorldName} - {world.PercentageComplete}% Complete";
