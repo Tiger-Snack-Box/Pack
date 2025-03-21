@@ -287,10 +287,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 4
   height: 4
-  _tilePrefab: {fileID: 5120258821323102486, guid: 9c2a190da99c1fc4095bfea19ee57141, type: 3}
-  _tilePrefab2: {fileID: 5821403540104066798, guid: 2344e489bd6e3474587f24e646d32731, type: 3}
-  _tilePrefab3: {fileID: 0}
-  _tilePrefab4: {fileID: 0}
+  tilePrefab: {fileID: 5120258821323102486, guid: 9c2a190da99c1fc4095bfea19ee57141, type: 3}
 --- !u!4 &1651241768
 Transform:
   m_ObjectHideFlags: 0
