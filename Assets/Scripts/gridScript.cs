@@ -1,178 +1,211 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor;
 
-public class gridScript : MonoBehaviour
+public class GridScript : MonoBehaviour
 {
-    [SerializeField] private int width, height; //serialize field, modifiable scale editor, 
+    [SerializeField] private int width, height;
     [SerializeField] private GameObject tilePrefab;
     private List<List<GameObject>> gridMatrix;
 
     private bool isDragging = false;
     private HashSet<GameObject> selectedTiles = new HashSet<GameObject>();
+    private List<GameObject> movingTiles = new List<GameObject>(); 
 
     private Color highlightColor = Color.yellow;
     private Color defaultColor = Color.white;
 
-    [SerializeField] private float followSpeed = 5f;
-
+    [SerializeField] private float followSpeed = 10f;
+    [SerializeField] private float moveToTargetSpeed = 4f;
+    private Vector2 targetPosition;
 
     void Start()
     {
-        gridMatrix = new List<List<GameObject>>(); 
-        generateGrid();
-        //removeTile(3, 3);
-        //changeTile(_tilePrefab2, 2, 2);
+        gridMatrix = new List<List<GameObject>>();
+        GenerateGrid();
+        UpdateTargetPosition();
     }
+
     void Update()
     {
-        handleInput();
+        HandleInput();
+
         if (isDragging)
         {
-            moveSelectedTiles();
+            MoveSelectedTiles();
         }
+
+        if (movingTiles.Count > 0)
+        {
+            MoveTilesToTarget();
+        }
+
     }
 
-
-    void generateGrid()
+    void GenerateGrid()
     {
         for (int x = 0; x < width; x++)
         {
-            List<GameObject> row = new List<GameObject>(); 
-            for(int y = 0; y < height; y++)
+            List<GameObject> row = new List<GameObject>();
+            for (int y = 0; y < height; y++)
             {
-                GameObject spawnedTile = Instantiate(tilePrefab, new Vector3(x,y,0), Quaternion.identity, gameObject.transform);
-                spawnedTile.name = $"Tile {x} {y}";
-                spawnedTile.AddComponent<BoxCollider2D>();
+                GameObject tile = Instantiate(tilePrefab, new Vector3(x, y, 0), Quaternion.identity, transform);
+                tile.name = $"Tile {x} {y}";
+                tile.AddComponent<BoxCollider2D>();
 
-                SpriteRenderer spriteRenderer = spawnedTile.GetComponent<SpriteRenderer>();
-                if(spriteRenderer != null)
+                SpriteRenderer spriteRenderer = tile.GetComponent<SpriteRenderer>();
+                if (spriteRenderer != null)
                 {
                     spriteRenderer.color = defaultColor;
                 }
-                row.Add(spawnedTile);
+                row.Add(tile);
+
             }
             gridMatrix.Add(row);
+
         }
-    }
-    void removeTile(int x, int y)
-    {
-        Destroy(gridMatrix[x][y]);
-    }
-    void changeTile(GameObject tileName, int x, int y)
-    {
-        GameObject spawnedTile = Instantiate(tileName, new Vector3(x, y), Quaternion.identity, gameObject.transform);
-        spawnedTile.name = $"Tile {x} {y}";
-        gridMatrix[x][y] = spawnedTile;
     }
 
-    void handleInput()
+    void HandleInput()
     {
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
             isDragging = true;
-            trySelectTile(Input.mousePosition);
+            TrySelectTile(Input.mousePosition);
         }
-        else if(Input.GetMouseButtonUp(0))
+        else if (Input.GetMouseButtonUp(0))
         {
             isDragging = false;
-            resetTiles();
+            StartMovingToTarget();
         }
 
         if (isDragging)
         {
-            trySelectTile(Input.mousePosition);
+            TrySelectTile(Input.mousePosition);
         }
 
-        if(Input.touchCount > 0)
+        if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
 
-            if(touch.phase == TouchPhase.Began)
+            if (touch.phase == TouchPhase.Began)
             {
                 isDragging = true;
-                trySelectTile(touch.position);
+                TrySelectTile(touch.position);
             }
             else if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
             {
-                if(isDragging)
+                if (isDragging)
                 {
-                    trySelectTile(touch.position);
+                    TrySelectTile(touch.position);
                 }
+
             }
-            else if(touch.phase == TouchPhase.Ended)
+            else if (touch.phase == TouchPhase.Ended)
             {
                 isDragging = false;
-                resetTiles();
+                StartMovingToTarget();
             }
         }
-
-
     }
 
-    void trySelectTile(Vector2 screenPos)
+    void TrySelectTile(Vector2 screenPos)
     {
         Vector2 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
         RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero);
 
-        if(hit.collider != null)
+        if (hit.collider != null)
         {
             GameObject tile = hit.collider.gameObject;
-            if(!selectedTiles.Contains(tile))
+
+            if (!selectedTiles.Contains(tile) && !movingTiles.Contains(tile))
             {
                 selectedTiles.Add(tile);
-                highlightTile(tile);
+                HighlightTile(tile);
             }
+
         }
     }
 
-    void highlightTile(GameObject tile)
+    void HighlightTile(GameObject tile)
     {
         SpriteRenderer spriteRenderer = tile.GetComponent<SpriteRenderer>();
-        if(spriteRenderer != null)
+        if (spriteRenderer != null)
         {
             spriteRenderer.color = highlightColor;
         }
     }
 
-    void resetTiles()
+    void MoveSelectedTiles()
     {
+        Vector2 fingerPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         foreach (GameObject tile in selectedTiles)
         {
-            StartCoroutine(FadeTileColor(tile));
+            tile.transform.position = Vector2.Lerp(tile.transform.position, fingerPos, followSpeed * Time.deltaTime);
         }
-        selectedTiles.Clear();
     }
 
-    System.Collections.IEnumerator FadeTileColor(GameObject tile)
+    void StartMovingToTarget()
+    {
+        movingTiles.AddRange(selectedTiles);
+        selectedTiles.Clear(); 
+    }
+
+    void MoveTilesToTarget()
+    {
+        List<GameObject> finishedMoving = new List<GameObject>();
+
+        foreach (GameObject tile in movingTiles)
+        {
+            tile.transform.position = Vector2.Lerp(tile.transform.position, targetPosition, moveToTargetSpeed * Time.deltaTime);
+
+            if (Vector2.Distance(tile.transform.position, targetPosition) < 0.1f)
+            {
+                finishedMoving.Add(tile);
+            }
+
+        }
+
+        foreach (GameObject tile in finishedMoving)
+        {
+            movingTiles.Remove(tile);
+            StartCoroutine(FadeAndDestroyTile(tile));
+        }
+
+    }
+
+    System.Collections.IEnumerator FadeAndDestroyTile(GameObject tile)
     {
         SpriteRenderer spriteRenderer = tile.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            float duration = 0.3f;
+            float duration = 0.5f;  
             float elapsedTime = 0;
             Color startColor = spriteRenderer.color;
 
             while (elapsedTime < duration)
             {
-                spriteRenderer.color = Color.Lerp(startColor, defaultColor, elapsedTime / duration);
+                float alpha = Mathf.Lerp(1f, 0f, elapsedTime / duration);
+                spriteRenderer.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
                 elapsedTime += Time.deltaTime;
                 yield return null;
             }
 
-            spriteRenderer.color = defaultColor; 
+            Destroy(tile); 
         }
+
     }
 
-    void moveSelectedTiles()
+    void UpdateTargetPosition()
     {
-        Vector2 targetPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        foreach (GameObject tile in selectedTiles)
-        {
-            tile.transform.position = Vector2.Lerp(tile.transform.position, targetPos, followSpeed * Time.deltaTime);
-        }
+        float targetX = Camera.main.ScreenToWorldPoint(new Vector2(Screen.width * 0.8f, 0)).x;
+        float targetY = Camera.main.ScreenToWorldPoint(new Vector2(0, Screen.height * 0.2f)).y;
+        targetPosition = new Vector2(targetX, targetY);
     }
 
 }
+
+
+
+
+
