@@ -22,12 +22,16 @@ public class gridScript : MonoBehaviour
     }
     void generateGrid()
     {
+        float xOffset = (width - 1) / 2.0f;
+        float yOffset = (height - 1) / 2.0f;
+
         for (int x = 0; x < width; x++)
         {
-            List<GameObject> list = new List<GameObject>(); 
-            for(int y = 0; y < height; y++)
+            List<GameObject> list = new List<GameObject>();
+            for (int y = 0; y < height; y++)
             {
-                GameObject spawnedTile = Instantiate(_tilePrefab, new Vector3(x,y), Quaternion.identity, gameObject.transform);
+                Vector3 spawnPosition = new Vector3(x - xOffset, y - yOffset, 0); // Centered position
+                GameObject spawnedTile = Instantiate(_tilePrefab, spawnPosition, Quaternion.identity, gameObject.transform);
                 spawnedTile.name = $"Tile {x} {y}";
                 list.Add(spawnedTile);
             }
