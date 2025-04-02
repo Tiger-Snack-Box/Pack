@@ -250,7 +250,7 @@ Transform:
   m_GameObject: {fileID: 510205131}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -20}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -287,10 +287,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 4
   height: 4
-  _tilePrefab: {fileID: 5120258821323102486, guid: 9c2a190da99c1fc4095bfea19ee57141, type: 3}
-  _tilePrefab2: {fileID: 5821403540104066798, guid: 2344e489bd6e3474587f24e646d32731, type: 3}
-  _tilePrefab3: {fileID: 0}
-  _tilePrefab4: {fileID: 0}
+  tilePrefab: {fileID: 5120258821323102486, guid: 9c2a190da99c1fc4095bfea19ee57141, type: 3}
+  followSpeed: 10
+  moveToTargetSpeed: 5
 --- !u!4 &1651241768
 Transform:
   m_ObjectHideFlags: 0
@@ -300,7 +299,7 @@ Transform:
   m_GameObject: {fileID: 1651241766}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.09875488, y: 0.2076416, z: 0.030812616}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
