@@ -4,15 +4,26 @@ using System.Collections;
 
 public class HealthBarDecay : MonoBehaviour
 {
+    public RectTransform healthBar; // Assign in Inspector
+    public float relativeOffset = 0.05f; // 5% down from the top
     public Slider slider;
     private float currentHealth;
 
     // Set the initial maximum health and start the coroutine to increase health
     void Start()
     {
+        AdjustHealthBarPosition();
         SetMaxHealth(100f);  // Set the max health to 100
         currentHealth = 0f;  // Start with 0 health
         StartCoroutine(IncreaseHealthOverTime());  // Start the health increase coroutine
+    }
+
+    void AdjustHealthBarPosition()
+    {
+        float screenHeight = Screen.height;
+        float yOffset = screenHeight * relativeOffset;
+
+        healthBar.anchoredPosition = new Vector2(healthBar.anchoredPosition.x, -yOffset);
     }
 
     // Set the max health and initial slider value
