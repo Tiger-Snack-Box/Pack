@@ -341,7 +341,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2384ad9ba8bddb84393af70b7af9c037, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nextPage: nextPage
+  nextPage: worldMap
 --- !u!1 &837036213
 GameObject:
   m_ObjectHideFlags: 0
