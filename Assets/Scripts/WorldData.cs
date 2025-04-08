@@ -3,14 +3,16 @@ using UnityEngine;
 [System.Serializable]
 public class WorldData
 {
+    public int WorldId;
     public string WorldName;
     public string PercentageComplete;
     public bool IsLocked;
 
-    public WorldData(string WorldName, string PercentageComplete, bool IsLocked)
+    public WorldData(int worldId, string worldName, string percentageComplete, bool isLocked)
     {
-        this.WorldName = WorldName;
-        this.PercentageComplete = PercentageComplete;
-        this.IsLocked = IsLocked;
+        this.WorldId = worldId;
+        this.WorldName = worldName;
+        this.PercentageComplete = percentageComplete;
+        this.IsLocked = isLocked;
     }
 }
