@@ -6,76 +6,41 @@ using UnityEditor;
 
 public class SoundSettings : MonoBehaviour
 {
-    [SerializeField] private Slider soundSlider;
-    [SerializeField] private Slider musicSlider;
-    [SerializeField] private AudioMixer masterMixer;
-
-    public static SoundSettings instance;
+    public static SoundSettings Instance;
+    public float masterVolume = 1f;
+    public float musicVolume = 1f;
     private void Awake()
     {
-        if (instance == null)
+        if (Instance == null)
         {
-            instance = this;
+            Instance = this;
             DontDestroyOnLoad(gameObject);
+            LoadSettings();
         }
         else
         {
             Destroy(gameObject);
         }
     }
-    //broken code, finds slider but value doesn't change at all
-    //private void OnEnable()
-    //{
-    //    SceneManager.sceneLoaded += refindSlider;
-    //}
-    //private void OnDisable()
-    //{
-    //    SceneManager.sceneLoaded -= refindSlider;
-    //}
-    private void Start()
+
+    public void SetVolume(string prefName, float volume)
     {
-        if (PlayerPrefs.HasKey("savedMusicVolume"))
+        if (prefName == "MasterVolume") 
         {
-            loadMusicVolume();
-        }
-        else
-            setMusicFromSlider();
-        if (PlayerPrefs.HasKey("savedSoundVolume"))
+            masterVolume = volume;
+        } if (prefName == "MusicVolume")
         {
-            loadSoundVolume();
+            musicVolume = volume;
         }
-        else
-            setVolumeFromSlider();
+        
+        PlayerPrefs.SetFloat(prefName, volume);
+        PlayerPrefs.Save();
     }
-    private void Update()
+
+    public void LoadSettings()
     {
-        refindSlider();
-    }
-    public void setVolumeFromSlider()
-    {
-        float volume = soundSlider.value;
-        masterMixer.SetFloat("MasterVolume", Mathf.Log10(volume) * 20);
-        PlayerPrefs.SetFloat("savedSoundVolume", volume);
-    }
-    private void loadSoundVolume()
-    {
-        soundSlider.value = PlayerPrefs.GetFloat("savedSoundVolume");
-        setVolumeFromSlider();
-    }
-    public void setMusicFromSlider()
-    {
-        float volume = musicSlider.value;
-        masterMixer.SetFloat("MusicVolume", Mathf.Log10(volume) * 20);
-        PlayerPrefs.SetFloat("savedMusicVolume", volume);
-    }
-    private void loadMusicVolume()
-    {
-        musicSlider.value = PlayerPrefs.GetFloat("savedMusicVolume");
-        setMusicFromSlider();
-    }
-    private void refindSlider()
-    {
-            musicSlider = GameObject.Find("Music Slider")?.GetComponent<Slider>();
-            soundSlider = GameObject.Find("Audio Slider")?.GetComponent<Slider>();
+        masterVolume = PlayerPrefs.GetFloat("MasterVolume", 1f);
+        musicVolume = PlayerPrefs.GetFloat("MusicVolume", 1f);
+
     }
 }

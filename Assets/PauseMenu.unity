@@ -550,10 +550,10 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 633423567}
-        m_TargetAssemblyTypeName: SoundSettings, Assembly-CSharp
-        m_MethodName: setVolumeFromSlider
-        m_Mode: 1
+      - m_Target: {fileID: 341857938}
+        m_TargetAssemblyTypeName: VolumeSlider, Assembly-CSharp
+        m_MethodName: OnSliderValueChanged
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -593,9 +593,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 341857935}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ccc0c0bc16891548a2785290a59f8ba, type: 3}
+  m_Script: {fileID: 11500000, guid: 321e52247d67eb2498f3e1b974cab0bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  prefName: MasterVolume
+  slider: {fileID: 341857936}
+  audioMixer: {fileID: 24100000, guid: 3690e46fdcb1b3745bd5426a4c5a9b3f, type: 2}
 --- !u!1 &367386187
 GameObject:
   m_ObjectHideFlags: 0
@@ -913,9 +916,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5106a27ec74699f46ba2b05d793da346, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundSlider: {fileID: 341857936}
-  musicSlider: {fileID: 1354297305}
-  masterMixer: {fileID: 24100000, guid: 3690e46fdcb1b3745bd5426a4c5a9b3f, type: 2}
+  masterVolume: 1
+  musicVolume: 1
 --- !u!4 &633423568
 Transform:
   m_ObjectHideFlags: 0
@@ -1486,6 +1488,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1354297304}
   - component: {fileID: 1354297305}
+  - component: {fileID: 1354297306}
   m_Layer: 5
   m_Name: Music Slider
   m_TagString: Untagged
@@ -1566,10 +1569,10 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 633423567}
-        m_TargetAssemblyTypeName: SoundSettings, Assembly-CSharp
-        m_MethodName: setMusicFromSlider
-        m_Mode: 1
+      - m_Target: {fileID: 1354297306}
+        m_TargetAssemblyTypeName: VolumeSlider, Assembly-CSharp
+        m_MethodName: OnSliderValueChanged
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1578,6 +1581,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &1354297306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1354297303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 321e52247d67eb2498f3e1b974cab0bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefName: MusicVolume
+  slider: {fileID: 1354297305}
+  audioMixer: {fileID: 24100000, guid: 3690e46fdcb1b3745bd5426a4c5a9b3f, type: 2}
 --- !u!1 &1437800500
 GameObject:
   m_ObjectHideFlags: 0
