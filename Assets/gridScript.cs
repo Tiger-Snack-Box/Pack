@@ -42,6 +42,6 @@ public class gridScript : MonoBehaviour
     {
         GameObject spawnedTile = Instantiate(tileName, new Vector3(x, y), Quaternion.identity, gameObject.transform);
         spawnedTile.name = $"Tile {x} {y}";
-        gridMatrix[x][y] = spawnedTile;
+        gridMatrix[x][y] = spawnedTile; 
     }
 }
