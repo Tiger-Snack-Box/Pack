@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class OnButtonClick : MonoBehaviour
 {
-    [SerializeField] private string nextPage = "nextPage";
+    [SerializeField] private string nextPage = "worldMap";
 
     public void playButton()
     {

@@ -4,17 +4,15 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEditor;
 
-
-
 public class GridScript : MonoBehaviour
 {
-    [SerializeField] private int width, height;
+    [SerializeField] private int width, height; //serialize field, modifiable scale editor, 
     [SerializeField] private GameObject tilePrefab;
     private List<List<GameObject>> gridMatrix;
 
     private bool isDragging = false;
     private HashSet<GameObject> selectedTiles = new HashSet<GameObject>();
-    private List<GameObject> movingTiles = new List<GameObject>(); 
+    private List<GameObject> movingTiles = new List<GameObject>();
 
     private Color highlightColor = Color.yellow;
     private Color defaultColor = Color.white;
@@ -25,7 +23,7 @@ public class GridScript : MonoBehaviour
 
     void Start()
     {
-        gridMatrix = new List<List<GameObject>>();
+        gridMatrix = new List<List<GameObject>>(); 
         GenerateGrid();
         UpdateTargetPosition();
     }
@@ -156,7 +154,7 @@ public class GridScript : MonoBehaviour
     void StartMovingToTarget()
     {
         movingTiles.AddRange(selectedTiles);
-        selectedTiles.Clear(); 
+        selectedTiles.Clear();
     }
 
     void MoveTilesToTarget()
@@ -187,7 +185,7 @@ public class GridScript : MonoBehaviour
         SpriteRenderer spriteRenderer = tile.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            float duration = 0.5f;  
+            float duration = 0.5f;
             float elapsedTime = 0;
             Color startColor = spriteRenderer.color;
 
@@ -199,7 +197,7 @@ public class GridScript : MonoBehaviour
                 yield return null;
             }
 
-            Destroy(tile); 
+            Destroy(tile);
         }
 
     }
@@ -210,5 +208,4 @@ public class GridScript : MonoBehaviour
         float targetY = Camera.main.ScreenToWorldPoint(new Vector2(0, Screen.height * 0.2f)).y;
         targetPosition = new Vector2(targetX, targetY);
     }
-
 }
