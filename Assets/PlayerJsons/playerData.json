@@ -1,0 +1,20 @@
+{
+    "Username": "TestUser",
+    "Progress": {
+        "Worlds": [
+            {
+                "WorldId": 1,
+                "UnlockedLevels": [
+                    1,
+                    2
+                ]
+            },
+            {
+                "WorldId": 2,
+                "UnlockedLevels": [
+                    1
+                ]
+            }
+        ]
+    }
+}
