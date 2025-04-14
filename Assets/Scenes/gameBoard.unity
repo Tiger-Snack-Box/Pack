@@ -145,15 +145,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 232958582}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d14ae818473d0f34798e026cd7837142, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f8d3b7f73765f643bf60173f64c6c5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 5
-  height: 5
-  _tilePrefab: {fileID: 5120258821323102486, guid: 9c2a190da99c1fc4095bfea19ee57141, type: 3}
-  _tilePrefab2: {fileID: 5120258821323102486, guid: 9c2a190da99c1fc4095bfea19ee57141, type: 3}
-  _tilePrefab3: {fileID: 5120258821323102486, guid: 9c2a190da99c1fc4095bfea19ee57141, type: 3}
-  _tilePrefab4: {fileID: 5821403540104066798, guid: 2344e489bd6e3474587f24e646d32731, type: 3}
+  width: 4
+  height: 4
+  _tilePrefab: {fileID: 5120258821323102486, guid: 84069035bfafe0645a2ce2e0b23d2e96, type: 3}
+  _tilePrefab2: {fileID: 5120258821323102486, guid: 84069035bfafe0645a2ce2e0b23d2e96, type: 3}
+  _tilePrefab3: {fileID: 5120258821323102486, guid: 84069035bfafe0645a2ce2e0b23d2e96, type: 3}
+  _tilePrefab4: {fileID: 5120258821323102486, guid: 84069035bfafe0645a2ce2e0b23d2e96, type: 3}
 --- !u!4 &232958584
 Transform:
   m_ObjectHideFlags: 0
@@ -534,7 +534,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1015224990}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e9afaaaab512b034cb4a7cb976578095, type: 3}
+  m_Script: {fileID: 11500000, guid: 11a6dc676f970464a97165e513b85ebc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   healthBar: {fileID: 1015224991}
