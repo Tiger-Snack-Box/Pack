@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Linq;
+using System.IO;
 
 public class LevelManager : MonoBehaviour
 {
@@ -12,16 +13,43 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
-        GenerateLevels();
+        LoadLevelData();
         CreateLevelButtons();
     }
 
-    void GenerateLevels()
+    void LoadLevelData()
     {
-        for(int i = 1; i <= 15; i++)
+        int worldIndex = WorldManager.Instance.SelectedWorldIndex;
+
+        string path = Path.Combine(Application.dataPath, "PlayerJsons", "playerData.json");
+
+        if (File.Exists(path))
         {
-            bool isLocked = (i != 1);
-            levels.Add(new LevelData(i, isLocked));
+            string json = File.ReadAllText(path);
+            PlayerData data = JsonUtility.FromJson<PlayerData>(json);
+
+            var worldProgress = data.Progress.Worlds.FirstOrDefault(w => w.WorldId == worldIndex + 1);
+
+            HashSet<int> unlockedLevelIds = new HashSet<int>();
+
+            if (worldProgress != null && worldProgress.UnlockedLevels != null)
+            {
+                unlockedLevelIds = new HashSet<int>(worldProgress.UnlockedLevels);
+            }
+
+            for (int i = 1; i <= 15; i++)
+            {
+                bool isLocked = !unlockedLevelIds.Contains(i);
+                levels.Add(new LevelData(i, isLocked));
+            }
+        }
+        else
+        {
+            Debug.LogWarning("No player data found. Defaulting to 1 unlocked level.");
+            for (int i = 1; i <= 15; i++)
+            {
+                levels.Add(new LevelData(i, i != 1));
+            }
         }
     }
 
@@ -77,7 +105,7 @@ public class LevelManager : MonoBehaviour
                     star.gameObject.SetActive(true);
                 }
 
-                // Set star rating properly
+
                 SetStarRating(button, level.rating);
 
                 int levelNum = level.levelNumber;
