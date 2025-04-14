@@ -6,14 +6,14 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/nextPage.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
-  - enabled: 1
-    path: Assets/worldMap.unity
+    path: Assets/Scenes/worldMap.unity
     guid: 9cd90f3b34160ee4994f56edf7269287
   - enabled: 1
     path: Assets/Scenes/LevelSelect.unity
     guid: c24dd2718c449f845aa8d8e9f361392e
+  - enabled: 1
+    path: Assets/Scenes/gameBoard.unity
+    guid: 132727fb9ded0a84099033454aa15bc5
   m_configObjects:
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 5aebb3fe6e9834641962ab0bc5213a71, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 2853901a7e1a297489fd6318027a6ff4, type: 2}

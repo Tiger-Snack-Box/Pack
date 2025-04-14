@@ -287,9 +287,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 4
   height: 4
-  tilePrefab: {fileID: 5120258821323102486, guid: 9c2a190da99c1fc4095bfea19ee57141, type: 3}
+  tilePrefab: {fileID: 5120258821323102486, guid: e036ca01dc80ed24e9f3e824671ba132, type: 3}
   followSpeed: 10
-  moveToTargetSpeed: 5
+  moveToTargetSpeed: 4
 --- !u!4 &1651241768
 Transform:
   m_ObjectHideFlags: 0
