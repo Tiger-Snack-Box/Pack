@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.TigerSnackBox.pack">
+
+    <application>
+        <activity android:name="com.unity3d.player.UnityPlayerActivity"
+                  android:launchMode="singleTask"
+                  android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
+                  android:screenOrientation="portrait">
+
+            <!-- Deep linking intent filter -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="pack" android:host="callback" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
