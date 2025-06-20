@@ -1,0 +1,47 @@
+{
+    "worlds": [
+        {
+            "worldNumber": 1,
+            "worldName": "Humble Beginnings",
+            "coins": 100,
+            "levels": [
+                {
+                    "levelNumber": 1,
+                    "snackQueueDuration": 10.0,
+                    "possibleSnackCount": 5,
+                    "shiftDuration": 120.0,
+                    "possiblePoints": 3000,
+                    "pointsPerStar": [
+                        1000,
+                        2000,
+                        3000
+                    ],
+                    "boxSize": 3,
+                    "snackList": [
+                        "Chocolate",
+                        "Candy",
+                        "Soda"
+                    ]
+                },
+                {
+                    "levelNumber": 2,
+                    "snackQueueDuration": 12.0,
+                    "possibleSnackCount": 6,
+                    "shiftDuration": 130.0,
+                    "possiblePoints": 3500,
+                    "pointsPerStar": [
+                        1200,
+                        2400,
+                        3500
+                    ],
+                    "boxSize": 4,
+                    "snackList": [
+                        "Chips",
+                        "Gummies",
+                        "Crackers"
+                    ]
+                }
+            ]
+        }
+    ]
+}

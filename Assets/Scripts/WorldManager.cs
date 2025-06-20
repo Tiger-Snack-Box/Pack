@@ -8,6 +8,7 @@ public class WorldManager : MonoBehaviour
     public static WorldManager Instance { get; private set; }
     public List<WorldData> worlds = new List<WorldData>();
     private string filePath;
+    private string gameConfigPath;
 
     private void Awake()
     {
@@ -16,6 +17,7 @@ public class WorldManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             filePath = Path.Combine(Application.dataPath, "PlayerJsons", "playerData.json");
+            gameConfigPath = Path.Combine(Application.dataPath, "GameConfigJson", "gameconfig.json");
             InitializeWorlds();
             LoadPlayerProgress(); 
         }
@@ -27,11 +29,22 @@ public class WorldManager : MonoBehaviour
 
     private void InitializeWorlds()
     {
-        for (int i = 0; i < 15; i++)
+        if (File.Exists(gameConfigPath))
         {
-            bool isLocked = (i != 0);
-            worlds.Add(new WorldData(i + 1, $"World {i + 1}", "0%", isLocked));
+            string json = File.ReadAllText(gameConfigPath);
+            GameConfigData config = JsonUtility.FromJson<GameConfigData>(json);
 
+            foreach (WorldConfigData configWorld in config.worlds)
+            {
+                bool isLocked = true;
+
+                worlds.Add(new WorldData(configWorld.worldNumber,
+                    configWorld.worldName, "0%", isLocked));
+            }
+            Debug.Log($"Loaded {worlds.Count} worlds from gameconfig");
+        } else
+        {
+            Debug.LogError($"Game config not found");
         }
     }
 

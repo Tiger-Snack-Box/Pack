@@ -19,37 +19,54 @@ public class LevelManager : MonoBehaviour
 
     void LoadLevelData()
     {
-        int worldIndex = WorldManager.Instance.SelectedWorldIndex;
+        int selectedWorldIndex = WorldManager.Instance.SelectedWorldIndex;
+        int selectedWorldNumber = selectedWorldIndex + 1;
 
-        string path = Path.Combine(Application.dataPath, "PlayerJsons", "playerData.json");
+        string configPath = Path.Combine(Application.dataPath, "GameConfigJson", "gameconfig.json");
+        string playerDataPath = Path.Combine(Application.dataPath, "PlayerJsons", "playerData.json");
 
-        if (File.Exists(path))
+        List<int> unlockedLevels = new List<int>();
+
+        if (File.Exists(playerDataPath))
         {
-            string json = File.ReadAllText(path);
-            PlayerData data = JsonUtility.FromJson<PlayerData>(json);
+            string playerJson = File.ReadAllText(playerDataPath);
+            PlayerData playerData = JsonUtility.FromJson<PlayerData>(playerJson);
 
-            var worldProgress = data.Progress.Worlds.FirstOrDefault(w => w.WorldId == worldIndex + 1);
-
-            HashSet<int> unlockedLevelIds = new HashSet<int>();
+            var worldProgress = playerData.Progress.Worlds
+                .FirstOrDefault(w => w.WorldId == selectedWorldNumber);
 
             if (worldProgress != null && worldProgress.UnlockedLevels != null)
             {
-                unlockedLevelIds = new HashSet<int>(worldProgress.UnlockedLevels);
+                unlockedLevels = worldProgress.UnlockedLevels;
             }
+        }
 
-            for (int i = 1; i <= 15; i++)
+        if (File.Exists(configPath))
+        {
+            string configJson = File.ReadAllText(configPath);
+            GameConfigData config = JsonUtility.FromJson<GameConfigData>(configJson);
+
+            WorldConfigData selectedWorld = config.worlds
+                .FirstOrDefault(w => w.worldNumber == selectedWorldNumber);
+
+            if (selectedWorld != null)
             {
-                bool isLocked = !unlockedLevelIds.Contains(i);
-                levels.Add(new LevelData(i, isLocked));
+                foreach (LevelConfigData level in selectedWorld.levels)
+                {
+                    bool isLocked = !unlockedLevels.Contains(level.levelNumber);
+                    levels.Add(new LevelData(level.levelNumber, isLocked));
+                }
+
+                Debug.Log($"Loaded {levels.Count} levels for World {selectedWorldNumber}");
+            }
+            else
+            {
+                Debug.LogError($"World {selectedWorldNumber} not found in GameConfig.");
             }
         }
         else
         {
-            Debug.LogWarning("No player data found. Defaulting to 1 unlocked level.");
-            for (int i = 1; i <= 15; i++)
-            {
-                levels.Add(new LevelData(i, i != 1));
-            }
+            Debug.LogError("gameconfig.json not found!");
         }
     }
 
@@ -65,19 +82,15 @@ public class LevelManager : MonoBehaviour
             Text levelText = button.transform.Find("Level").GetComponent<Text>();
             Text levelNumberText = button.transform.Find("LevelText").GetComponent<Text>();
             Text lockedText = button.transform.Find("Locked").GetComponent<Text>();
-            Transform lockImage = button.transform.Find("LockImage"); 
+            Transform lockImage = button.transform.Find("LockImage");
 
             if (level.isLocked)
             {
-                
                 if (lockImage != null) lockImage.gameObject.SetActive(true);
                 if (lockedText != null) lockedText.gameObject.SetActive(true);
                 if (levelText != null) levelText.gameObject.SetActive(false);
                 if (levelNumberText != null) levelNumberText.gameObject.SetActive(false);
-                if (buttonBackground != null)
-                {
-                    buttonBackground.color = lockedColor;
-                }
+                if (buttonBackground != null) buttonBackground.color = lockedColor;
 
                 foreach (var star in button.GetComponentsInChildren<Image>(true)
                                            .Where(img => img.gameObject.CompareTag("Star")))
@@ -85,11 +98,10 @@ public class LevelManager : MonoBehaviour
                     star.gameObject.SetActive(false);
                 }
 
-                button.interactable = false; 
+                button.interactable = false;
             }
             else
             {
-                
                 if (lockImage != null) lockImage.gameObject.SetActive(false);
                 if (lockedText != null) lockedText.gameObject.SetActive(false);
                 if (levelText != null) levelText.gameObject.SetActive(true);
@@ -105,13 +117,10 @@ public class LevelManager : MonoBehaviour
                     star.gameObject.SetActive(true);
                 }
 
-
                 SetStarRating(button, level.rating);
 
                 int levelNum = level.levelNumber;
-
-                // once levels are made:
-                //button.onClick.AddListener(() => LoadLevel(levelNum));
+                // button.onClick.AddListener(() => LoadLevel(levelNum));
             }
         }
     }
@@ -129,9 +138,5 @@ public class LevelManager : MonoBehaviour
         {
             stars[i].color = (i < rating) ? yellow : grey;
         }
-
     }
-
-
-
 }
