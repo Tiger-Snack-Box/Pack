@@ -60,7 +60,15 @@ public class OrderManager : MonoBehaviour
 
     void GenerateRandomOrder()
     {
-        string item = itemPool[Random.Range(0, itemPool.Length)];
+        int itemCount = Random.Range(1, 4);
+        List<int> snacks = new List<int>();
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            int snackType = Random.Range(1, 5); 
+            snacks.Add(snackType);
+        }
+
         float time = Random.Range(10f, 20f);
         Order newOrder = new Order(item, time);
         orderQueue.Enqueue(newOrder);
@@ -70,36 +78,55 @@ public class OrderManager : MonoBehaviour
         uiScript.Setup(newOrder);
     }
 
-    public void FulfillOrder(string itemName)
+    public void FulfillOrder()
     {
         if (orderQueue.Count == 0) return;
 
-        Order[] orders = orderQueue.ToArray();
+        // Remove the first order
+        Order order = orderQueue.Dequeue();
 
-        for (int i = 0; i < orders.Length; i++)
+        // Remove its UI
+        foreach (Transform child in orderPanel)
         {
-            if (orders[i].itemName == itemName)
+            OrderUI ui = child.GetComponent<OrderUI>();
+            if (ui != null && ui.order == order)
             {
-                orderQueue = new Queue<Order>(orders);
-                orderQueue.Dequeue(); // Remove fulfilled order
-
-                foreach (Transform child in orderPanel)
-                {
-                    OrderUI ui = child.GetComponent<OrderUI>();
-                    if (ui != null && ui.order.itemName == itemName)
-                    {
-                        Destroy(child.gameObject);
-                        break;
-                    }
-                }
-
-                Debug.Log($"Fulfilled: {itemName}");
-                return;
+                Destroy(child.gameObject);
+                break;
             }
         }
 
-        Debug.Log("No matching order found.");
+        Debug.Log($"Fulfilled order: [{string.Join(", ", order.snackTypes)}]");
     }
+
+
+    public bool TryFulfill(List<int> collectedSnackTypes)
+{
+    if (orderQueue.Count == 0) return false;
+
+    Order current = orderQueue.Peek();
+
+    // Compare sizes
+    if (current.snackTypes.Count != collectedSnackTypes.Count)
+        return false;
+
+    // Compare lists as sets (sorted)
+    List<int> a = new List<int>(current.snackTypes);
+    List<int> b = new List<int>(collectedSnackTypes);
+
+    a.Sort();
+    b.Sort();
+
+    for (int i = 0; i < a.Count; i++)
+    {
+        if (a[i] != b[i]) return false;
+    }
+
+    // It's a match!
+    FulfillOrder();
+    return true;
+}
+
 
     void RemoveOrder(Order order)
     {

@@ -10,7 +10,7 @@ public class OrderUI : MonoBehaviour
     public void Setup(Order order)
     {
         this.order = order;
-        itemNameText.text = order.itemName;
+        itemNameText.text = "Order: " + string.Join(", ", order.snackTypes);
         timerSlider.maxValue = order.timeToComplete;
         timerSlider.value = order.timeRemaining;
     }

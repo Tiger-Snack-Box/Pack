@@ -1,13 +1,13 @@
 [System.Serializable]
 public class Order
 {
-    public string itemName;
+    public List<int> snackTypes;
     public float timeToComplete;
     public float timeRemaining;
 
-    public Order(string itemName, float timeToComplete)
+    public Order(List<int> snackTypes, float timeToComplete)
     {
-        this.itemName = itemName;
+        this.snackTypes = snackTypes;
         this.timeToComplete = timeToComplete;
         this.timeRemaining = timeToComplete;
     }
