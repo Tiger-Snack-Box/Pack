@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEngine.InputSystem;
 using UnityEditor;
 
 public class GridScript : MonoBehaviour
@@ -74,12 +75,12 @@ public class GridScript : MonoBehaviour
 
     void HandleInput()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             isDragging = true;
-            TrySelectTile(Input.mousePosition);
+            TrySelectTile(Mouse.current.position.ReadValue());
         }
-        else if (Input.GetMouseButtonUp(0))
+        else if (Mouse.current.leftButton.wasReleasedThisFrame)
         {
             isDragging = false;
             StartMovingToTarget();
@@ -87,27 +88,27 @@ public class GridScript : MonoBehaviour
 
         if (isDragging)
         {
-            TrySelectTile(Input.mousePosition);
+            TrySelectTile(Mouse.current.position.ReadValue());
         }
 
-        if (Input.touchCount > 0)
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
         {
-            Touch touch = Input.GetTouch(0);
+            var touch = Touchscreen.current.primaryTouch;
 
-            if (touch.phase == TouchPhase.Began)
+            if (touch.press.wasPressedThisFrame)
             {
                 isDragging = true;
-                TrySelectTile(touch.position);
+                TrySelectTile(touch.position.ReadValue());
             }
-            else if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
+            else if (touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Moved ||
+                     touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Stationary)
             {
                 if (isDragging)
                 {
-                    TrySelectTile(touch.position);
+                    TrySelectTile(touch.position.ReadValue());
                 }
-
             }
-            else if (touch.phase == TouchPhase.Ended)
+            else if (touch.press.wasReleasedThisFrame)
             {
                 isDragging = false;
                 StartMovingToTarget();
@@ -144,7 +145,17 @@ public class GridScript : MonoBehaviour
 
     void MoveSelectedTiles()
     {
-        Vector2 fingerPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 fingerPos = Vector2.zero;
+
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+        {
+            fingerPos = Camera.main.ScreenToWorldPoint(Touchscreen.current.primaryTouch.position.ReadValue());
+        }
+        else if (Mouse.current != null)
+        {
+            fingerPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        }
+
         foreach (GameObject tile in selectedTiles)
         {
             tile.transform.position = Vector2.Lerp(tile.transform.position, fingerPos, followSpeed * Time.deltaTime);
@@ -165,7 +176,7 @@ public class GridScript : MonoBehaviour
         {
             tile.transform.position = Vector2.Lerp(tile.transform.position, targetPosition, moveToTargetSpeed * Time.deltaTime);
 
-            if (Vector2.Distance(tile.transform.position, targetPosition) < 0.1f)
+            if (Vector2.Distance(tile.transform.position, targetPosition) < 2f)
             {
                 finishedMoving.Add(tile);
             }

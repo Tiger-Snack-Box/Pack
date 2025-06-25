@@ -6,16 +6,23 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/gameBoard.unity
+    guid: 132727fb9ded0a84099033454aa15bc5
+  - enabled: 1
+    path: Assets/Scenes/playNowScreen.unity
+    guid: 6460b05d7b0f0d64eafc05a4e0a59ed5
+  - enabled: 1
     path: Assets/Scenes/worldMap.unity
     guid: 9cd90f3b34160ee4994f56edf7269287
   - enabled: 1
     path: Assets/Scenes/LevelSelect.unity
     guid: c24dd2718c449f845aa8d8e9f361392e
   - enabled: 1
-    path: Assets/Scenes/gameBoard.unity
-    guid: 132727fb9ded0a84099033454aa15bc5
+    path: Assets/Scenes/UserAccountCreationandModification.unity
+    guid: a9d76cc3f84e78a4b9fd1a3678e26807
   m_configObjects:
-    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 5aebb3fe6e9834641962ab0bc5213a71, type: 2}
+    com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 25bc9178e4b96254cbd7f8321ff2b5ad, type: 2}
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 584039caac6995447b4f339ed20482f0, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 2853901a7e1a297489fd6318027a6ff4, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

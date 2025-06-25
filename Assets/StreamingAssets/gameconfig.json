@@ -1,0 +1,146 @@
+{
+    "worlds": [
+      {
+        "worldNumber": 1,
+        "worldName": "Humble Beginnings",
+        "coins": 100,
+        "levels": [
+          {
+            "levelNumber": 1,
+            "snackQueueDuration": 10.0,
+            "possibleSnackCount": 5,
+            "shiftDuration": 120.0,
+            "possiblePoints": 3000,
+            "pointsPerStar": [1000, 2000, 3000],
+            "boxSize": 3,
+            "snackList": ["Chocolate", "Candy", "Soda"]
+          },
+          {
+            "levelNumber": 2,
+            "snackQueueDuration": 12.0,
+            "possibleSnackCount": 6,
+            "shiftDuration": 130.0,
+            "possiblePoints": 3500,
+            "pointsPerStar": [1200, 2400, 3500],
+            "boxSize": 4,
+            "snackList": ["Chips", "Gummies", "Crackers"]
+          },
+          {
+            "levelNumber": 3,
+            "snackQueueDuration": 15.0,
+            "possibleSnackCount": 7,
+            "shiftDuration": 140.0,
+            "possiblePoints": 4000,
+            "pointsPerStar": [1300, 2600, 4000],
+            "boxSize": 5,
+            "snackList": ["Pretzels", "Popcorn", "Peanuts"]
+          }
+        ]
+      },
+      {
+        "worldNumber": 2,
+        "worldName": "Sweet Tooth City",
+        "coins": 250,
+        "levels": [
+          {
+            "levelNumber": 1,
+            "snackQueueDuration": 8.0,
+            "possibleSnackCount": 6,
+            "shiftDuration": 110.0,
+            "possiblePoints": 3200,
+            "pointsPerStar": [1100, 2200, 3200],
+            "boxSize": 3,
+            "snackList": ["Cupcakes", "Lollipops", "Marshmallows"]
+          },
+          {
+            "levelNumber": 2,
+            "snackQueueDuration": 13.0,
+            "possibleSnackCount": 8,
+            "shiftDuration": 150.0,
+            "possiblePoints": 4500,
+            "pointsPerStar": [1400, 2800, 4500],
+            "boxSize": 5,
+            "snackList": ["Macarons", "Donuts", "Fudge"]
+          },
+          {
+            "levelNumber": 3,
+            "snackQueueDuration": 17.0,
+            "possibleSnackCount": 9,
+            "shiftDuration": 160.0,
+            "possiblePoints": 5000,
+            "pointsPerStar": [1600, 3200, 5000],
+            "boxSize": 6,
+            "snackList": ["Chocolate Bars", "Candy Canes", "Caramel"]
+          },
+          {
+            "levelNumber": 4,
+            "snackQueueDuration": 20.0,
+            "possibleSnackCount": 10,
+            "shiftDuration": 170.0,
+            "possiblePoints": 5500,
+            "pointsPerStar": [1800, 3600, 5500],
+            "boxSize": 6,
+            "snackList": ["Brownies", "Pie Slices", "Ice Cream"]
+          }
+        ]
+      },
+      {
+        "worldNumber": 3,
+        "worldName": "Savory Snacks",
+        "coins": 400,
+        "levels": [
+          {
+            "levelNumber": 1,
+            "snackQueueDuration": 9.0,
+            "possibleSnackCount": 5,
+            "shiftDuration": 130.0,
+            "possiblePoints": 3400,
+            "pointsPerStar": [1100, 2300, 3400],
+            "boxSize": 4,
+            "snackList": ["Cheese Sticks", "Beef Jerky", "Mixed Nuts"]
+          },
+          {
+            "levelNumber": 2,
+            "snackQueueDuration": 14.0,
+            "possibleSnackCount": 7,
+            "shiftDuration": 155.0,
+            "possiblePoints": 4700,
+            "pointsPerStar": [1500, 3000, 4700],
+            "boxSize": 5,
+            "snackList": ["Sausage Rolls", "Mini Sandwiches", "Stuffed Olives"]
+          },
+          {
+            "levelNumber": 3,
+            "snackQueueDuration": 16.0,
+            "possibleSnackCount": 8,
+            "shiftDuration": 180.0,
+            "possiblePoints": 5200,
+            "pointsPerStar": [1700, 3400, 5200],
+            "boxSize": 6,
+            "snackList": ["Meatballs", "Onion Rings", "Potato Skins"]
+          },
+          {
+            "levelNumber": 4,
+            "snackQueueDuration": 18.0,
+            "possibleSnackCount": 9,
+            "shiftDuration": 190.0,
+            "possiblePoints": 6000,
+            "pointsPerStar": [1900, 3800, 6000],
+            "boxSize": 6,
+            "snackList": ["Pretzel Bites", "Chicken Wings", "Spring Rolls"]
+          },
+          {
+            "levelNumber": 5,
+            "snackQueueDuration": 22.0,
+            "possibleSnackCount": 10,
+            "shiftDuration": 210.0,
+            "possiblePoints": 7000,
+            "pointsPerStar": [2200, 4400, 7000],
+            "boxSize": 7,
+            "snackList": ["Stuffed Mushrooms", "Loaded Nachos", "Mini Tacos"]
+          }
+        ]
+      }
+    ]
+  }
+  

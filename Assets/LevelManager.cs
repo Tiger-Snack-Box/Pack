@@ -1,8 +1,10 @@
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.UI;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Networking;
 
 public class LevelManager : MonoBehaviour
 {
@@ -13,25 +15,75 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
-        LoadLevelData();
+        StartCoroutine(LoadAndDisplayLevels());
+    }
+
+    private IEnumerator LoadAndDisplayLevels()
+    {
+        yield return StartCoroutine(LoadLevelData());
         CreateLevelButtons();
     }
 
-    void LoadLevelData()
+    public IEnumerator LoadLevelData()
     {
         int selectedWorldIndex = WorldManager.Instance.SelectedWorldIndex;
         int selectedWorldNumber = selectedWorldIndex + 1;
 
-        string configPath = Path.Combine(Application.dataPath, "GameConfigJson", "gameconfig.json");
-        string playerDataPath = Path.Combine(Application.dataPath, "PlayerJsons", "playerData.json");
+        string configPath = Path.Combine(Application.streamingAssetsPath, "gameconfig.json");
+        string playerDataPath = Path.Combine(Application.persistentDataPath, "playerData.json");
 
-        List<int> unlockedLevels = new List<int>();
+        string configJson = null;
+        string playerJson = null;
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // Android: Use UnityWebRequest to load JSON files from StreamingAssets
+        UnityWebRequest configRequest = UnityWebRequest.Get(configPath);
+        yield return configRequest.SendWebRequest();
+        if (configRequest.result == UnityWebRequest.Result.Success)
+        {
+            configJson = configRequest.downloadHandler.text;
+        }
+        else
+        {
+            Debug.LogError("Failed to load gameconfig.json: " + configRequest.error);
+            yield break;
+        }
 
         if (File.Exists(playerDataPath))
         {
-            string playerJson = File.ReadAllText(playerDataPath);
-            PlayerData playerData = JsonUtility.FromJson<PlayerData>(playerJson);
+            playerJson = File.ReadAllText(playerDataPath);
+        }
+        else
+        {
+            Debug.LogWarning("playerData.json not found at: " + playerDataPath);
+        }
+#else
+        // Non-Android (Editor/Desktop): Use File.ReadAllText
+        if (File.Exists(configPath))
+        {
+            configJson = File.ReadAllText(configPath);
+        }
+        else
+        {
+            Debug.LogError("gameconfig.json not found at: " + configPath);
+            yield break;
+        }
 
+        if (File.Exists(playerDataPath))
+        {
+            playerJson = File.ReadAllText(playerDataPath);
+        }
+        else
+        {
+            Debug.LogWarning("playerData.json not found at: " + playerDataPath);
+        }
+#endif
+
+        // Parse player data (optional)
+        List<int> unlockedLevels = new List<int>();
+        if (!string.IsNullOrEmpty(playerJson))
+        {
+            PlayerData playerData = JsonUtility.FromJson<PlayerData>(playerJson);
             var worldProgress = playerData.Progress.Worlds
                 .FirstOrDefault(w => w.WorldId == selectedWorldNumber);
 
@@ -41,32 +93,25 @@ public class LevelManager : MonoBehaviour
             }
         }
 
-        if (File.Exists(configPath))
+        // Parse config data
+        GameConfigData config = JsonUtility.FromJson<GameConfigData>(configJson);
+        WorldConfigData selectedWorld = config.worlds
+            .FirstOrDefault(w => w.worldNumber == selectedWorldNumber);
+
+        if (selectedWorld != null)
         {
-            string configJson = File.ReadAllText(configPath);
-            GameConfigData config = JsonUtility.FromJson<GameConfigData>(configJson);
-
-            WorldConfigData selectedWorld = config.worlds
-                .FirstOrDefault(w => w.worldNumber == selectedWorldNumber);
-
-            if (selectedWorld != null)
+            levels.Clear(); // Clear existing levels if reloading
+            foreach (LevelConfigData level in selectedWorld.levels)
             {
-                foreach (LevelConfigData level in selectedWorld.levels)
-                {
-                    bool isLocked = !unlockedLevels.Contains(level.levelNumber);
-                    levels.Add(new LevelData(level.levelNumber, isLocked));
-                }
+                bool isLocked = !unlockedLevels.Contains(level.levelNumber);
+                levels.Add(new LevelData(level.levelNumber, isLocked));
+            }
 
-                Debug.Log($"Loaded {levels.Count} levels for World {selectedWorldNumber}");
-            }
-            else
-            {
-                Debug.LogError($"World {selectedWorldNumber} not found in GameConfig.");
-            }
+            Debug.Log($"Loaded {levels.Count} levels for World {selectedWorldNumber}");
         }
         else
         {
-            Debug.LogError("gameconfig.json not found!");
+            Debug.LogError($"World {selectedWorldNumber} not found in GameConfig.");
         }
     }
 
