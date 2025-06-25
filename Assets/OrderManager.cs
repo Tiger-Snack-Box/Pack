@@ -10,7 +10,6 @@ public class OrderManager : MonoBehaviour
 
     private float spawnTimer;
     private Queue<Order> orderQueue = new Queue<Order>();
-    private string[] itemPool = { "Burger", "Fries", "Pizza", "Soda", "Salad" };
 
     void Start()
     {
@@ -51,26 +50,25 @@ public class OrderManager : MonoBehaviour
         foreach (Transform expired in toRemove)
         {
             OrderUI ui = expired.GetComponent<OrderUI>();
-            orderQueue = new Queue<Order>(orderQueue.ToArray()); // Rebuild queue without that order
-            Debug.Log($"Order expired: {ui.order.itemName}");
             Destroy(expired.gameObject);
+            orderQueue = new Queue<Order>(orderQueue.ToArray()); // clean up queue
+            Debug.Log("? Order expired.");
         }
     }
 
-
     void GenerateRandomOrder()
     {
-        int itemCount = Random.Range(1, 4);
-        List<int> snacks = new List<int>();
+        List<int> snackTypes = new List<int>();
+        int count = Random.Range(1, 4); // 1–3 snacks per order
 
-        for (int i = 0; i < itemCount; i++)
+        for (int i = 0; i < count; i++)
         {
-            int snackType = Random.Range(1, 5); 
-            snacks.Add(snackType);
+            int snackType = Random.Range(1, 5); // Assuming 1–4 are valid snack types
+            snackTypes.Add(snackType);
         }
 
         float time = Random.Range(10f, 20f);
-        Order newOrder = new Order(item, time);
+        Order newOrder = new Order(snackTypes, time);
         orderQueue.Enqueue(newOrder);
 
         GameObject uiObject = Instantiate(orderUIPrefab, orderPanel);
@@ -78,73 +76,50 @@ public class OrderManager : MonoBehaviour
         uiScript.Setup(newOrder);
     }
 
+    public bool TryFulfill(List<int> collectedSnackTypes)
+    {
+        if (orderQueue.Count == 0) return false;
+
+        Order current = orderQueue.Peek();
+
+        if (current.snackTypes.Count != collectedSnackTypes.Count)
+            return false;
+
+        List<int> a = new List<int>(current.snackTypes);
+        List<int> b = new List<int>(collectedSnackTypes);
+        a.Sort();
+        b.Sort();
+
+        for (int i = 0; i < a.Count; i++)
+        {
+            if (a[i] != b[i]) return false;
+        }
+
+        FulfillOrder();
+        return true;
+    }
+
     public void FulfillOrder()
     {
         if (orderQueue.Count == 0) return;
 
-        // Remove the first order
-        Order order = orderQueue.Dequeue();
+        Order fulfilled = orderQueue.Dequeue();
 
-        // Remove its UI
         foreach (Transform child in orderPanel)
         {
             OrderUI ui = child.GetComponent<OrderUI>();
-            if (ui != null && ui.order == order)
+            if (ui != null && ui.order == fulfilled)
             {
                 Destroy(child.gameObject);
                 break;
             }
         }
 
-        Debug.Log($"Fulfilled order: [{string.Join(", ", order.snackTypes)}]");
+        Debug.Log("Fulfilled order: " + string.Join(", ", fulfilled.snackTypes));
     }
 
-
-    public bool TryFulfill(List<int> collectedSnackTypes)
-{
-    if (orderQueue.Count == 0) return false;
-
-    Order current = orderQueue.Peek();
-
-    // Compare sizes
-    if (current.snackTypes.Count != collectedSnackTypes.Count)
-        return false;
-
-    // Compare lists as sets (sorted)
-    List<int> a = new List<int>(current.snackTypes);
-    List<int> b = new List<int>(collectedSnackTypes);
-
-    a.Sort();
-    b.Sort();
-
-    for (int i = 0; i < a.Count; i++)
+    public Order PeekOrder()
     {
-        if (a[i] != b[i]) return false;
+        return orderQueue.Count > 0 ? orderQueue.Peek() : null;
     }
-
-    // It's a match!
-    FulfillOrder();
-    return true;
-}
-
-
-    void RemoveOrder(Order order)
-    {
-        orderQueue = new Queue<Order>(orderQueue.ToArray());
-        Debug.Log($"Order expired: {order.itemName}");
-    }
-
-    void OnGUI()
-    {
-        if (GUI.Button(new Rect(10, 10, 160, 30), "Fulfill First Order"))
-        {
-            if (orderQueue.Count > 0)
-            {
-                string itemToFulfill = orderQueue.Peek().itemName;
-                FulfillOrder(itemToFulfill);
-            }
-        }
-    }
-
-
 }

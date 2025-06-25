@@ -12,14 +12,19 @@ public class gridScript : MonoBehaviour
     [SerializeField] private GameObject _tilePrefab3;
     [SerializeField] private GameObject _tilePrefab4;
     private List<List<GameObject>> gridMatrix;
-    
+
     void Start()
     {
-        gridMatrix = new List<List<GameObject>>(); 
+        gridMatrix = new List<List<GameObject>>();
         generateGrid();
-        removeTile(3, 3);
-        changeTile(_tilePrefab2, 2, 2);
+
+        if (width > 3 && height > 3)
+            removeTile(3, 3);
+
+        if (width > 2 && height > 2)
+            changeTile(_tilePrefab2, 2, 2);
     }
+
     void generateGrid()
     {
         for (int x = 0; x < width; x++)
