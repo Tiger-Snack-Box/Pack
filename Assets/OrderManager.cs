@@ -4,17 +4,27 @@ using UnityEngine.UI;
 
 public class OrderManager : MonoBehaviour
 {
-    public GameObject orderUIPrefab;
-    public Transform orderPanel;
-    public float orderSpawnInterval = 5f;
+    [SerializeField] private GameObject orderUIPrefab;
+    [SerializeField] public Transform orderPanel;
+    [SerializeField] private float orderSpawnInterval = 5f;
+    [SerializeField] private int capacity = 3; // Max items per order
+    [SerializeField] private GridScript gridScript;
+    [SerializeField] private GameProgressManager gameProgressManager;
+
+
+    [Header("Order Lifetime (in seconds)")]
+    [SerializeField] private float expireTime = 15f;
 
     private float spawnTimer;
     private Queue<Order> orderQueue = new Queue<Order>();
-    private string[] itemPool = { "Burger", "Fries", "Pizza", "Soda", "Salad" };
 
     void Start()
     {
         spawnTimer = orderSpawnInterval;
+        if (gridScript != null)
+        {
+            gridScript.OnTilesFadeComplete += OnTilesFadeCompleteHandler;
+        }
     }
 
     void Update()
@@ -51,18 +61,124 @@ public class OrderManager : MonoBehaviour
         foreach (Transform expired in toRemove)
         {
             OrderUI ui = expired.GetComponent<OrderUI>();
-            orderQueue = new Queue<Order>(orderQueue.ToArray()); // Rebuild queue without that order
-            Debug.Log($"Order expired: {ui.order.itemName}");
-            Destroy(expired.gameObject);
+            if (ui != null)
+            {
+                // Remove the corresponding order from the queue
+                List<Order> updatedOrders = new List<Order>(orderQueue);
+                if (updatedOrders.Remove(ui.order)) // only removes matching order
+                {
+                    orderQueue = new Queue<Order>(updatedOrders);
+                }
+
+                Debug.Log($"Order expired: {ui.order.sprite.name}");
+                Destroy(expired.gameObject);
+                gameProgressManager?.LosePoints();
+                Debug.Log("Removed Points from ProgressManager");
+            }
         }
+    }
+    public void OnTilesFadeCompleteHandler(Sprite sprite)
+    {
+        // Find the order by sprite
+        Order orderToRemove = null;
+        foreach (Order order in orderQueue)
+        {
+            if (order.sprite == sprite)
+            {
+                orderToRemove = order;
+                break;
+            }
+        }
+
+        // Only remove if the order is FULL
+        if (orderToRemove != null && orderToRemove.currentFill >= orderToRemove.requiredCapacity)
+        {
+            RemoveOrder(orderToRemove);
+        }
+    }
+    public void ProcessSwipe(List<Sprite> swipedItems)
+    {
+        if (swipedItems == null || swipedItems.Count == 0) return;
+
+        Order[] orders = orderQueue.ToArray();
+
+        foreach (Order order in orders)
+        {
+            // Skip incompatible orders
+            if (swipedItems.Contains(order.sprite))
+            {
+                gameProgressManager?.LosePoints();
+                Debug.Log("Removed Points from ProgressManager");
+                continue;
+            }
+
+            int availableCapacity = order.requiredCapacity - order.currentFill;
+
+            // Only accept if swiped count fits capacity
+            if (swipedItems.Count <= availableCapacity)
+            {
+                order.currentFill += swipedItems.Count;
+                Debug.Log($"Added {swipedItems.Count} to order {order.sprite.name}, fill {order.currentFill}/{order.requiredCapacity}");
+
+                // Remove ONLY if order is FULL
+                if (order.currentFill >= order.requiredCapacity)
+                {
+                    gameProgressManager?.GainPoints();
+                    Debug.Log("Added Points to ProgressManager");
+                    RemoveOrder(order);  // Remove only full orders
+                }
+
+                return; // Only fulfill one order per swipe
+            }
+        }
+
+        Debug.Log("No compatible order found for swipe.");
     }
 
 
+    public void RemoveOrder(Order order)
+    {
+        // Rebuild the queue without the order to remove
+        var orders = new List<Order>(orderQueue);
+        if (orders.Remove(order))
+        {
+            orderQueue = new Queue<Order>(orders);
+        }
+
+        // Destroy UI element matching this order's sprite
+        foreach (Transform child in orderPanel)
+        {
+            OrderUI ui = child.GetComponent<OrderUI>();
+            if (ui != null && ui.order == order)
+            {
+                Destroy(child.gameObject);
+                break;
+            }
+        }
+
+        Debug.Log($"Order {order.sprite.name} fulfilled and removed.");
+    }
+
     void GenerateRandomOrder()
     {
-        string item = itemPool[Random.Range(0, itemPool.Length)];
-        float time = Random.Range(10f, 20f);
-        Order newOrder = new Order(item, time);
+        // Limit to 4 active orders
+        if (orderQueue.Count >= 4)
+        {
+            return;
+        }
+
+        List<Sprite> spritePool = gridScript.itemSprites;
+        if (spritePool == null || spritePool.Count == 0)
+        {
+            Debug.LogWarning("No item sprites found in GridScript.");
+            return;
+        }
+
+        Sprite chosenSprite = spritePool[Random.Range(0, spritePool.Count)];
+        int randomCapacity = Random.Range(1, capacity + 1);
+        float time = expireTime;
+
+        Order newOrder = new Order(chosenSprite, randomCapacity, time);
         orderQueue.Enqueue(newOrder);
 
         GameObject uiObject = Instantiate(orderUIPrefab, orderPanel);
@@ -70,7 +186,64 @@ public class OrderManager : MonoBehaviour
         uiScript.Setup(newOrder);
     }
 
-    public void FulfillOrder(string itemName)
+    public Transform GetCompatibleOrderTarget(List<Sprite> swipedItems)
+    {
+        foreach (Transform child in orderPanel)
+        {
+            OrderUI ui = child.GetComponent<OrderUI>();
+            if (ui == null) continue;
+
+            Order order = ui.order;
+            if (swipedItems.Contains(order.sprite)) continue; // incompatible
+
+            int availableCapacity = order.requiredCapacity - order.currentFill;
+            if (swipedItems.Count <= availableCapacity)
+            {
+                return ui.transform; // return the UI's position
+            }
+        }
+
+        return null; // no compatible order
+    }
+
+    public Order ProcessSwipeGetOrder(List<Sprite> swipedItems)
+    {
+        if (swipedItems == null || swipedItems.Count == 0) return null;
+
+        Order[] orders = orderQueue.ToArray();
+
+        foreach (Order order in orders)
+        {
+            if (swipedItems.Contains(order.sprite))
+            {
+                gameProgressManager?.LosePoints();
+                Debug.Log("Removed Points from ProgressManager");
+                continue;
+            }
+
+            int availableCapacity = order.requiredCapacity - order.currentFill;
+
+            if (swipedItems.Count <= availableCapacity)
+            {
+                order.currentFill += swipedItems.Count;
+                Debug.Log($"Added {swipedItems.Count} to order {order.sprite.name}, fill {order.currentFill}/{order.requiredCapacity}");
+
+                if (order.currentFill >= order.requiredCapacity)
+                {
+                    gameProgressManager?.GainPoints();
+                    Debug.Log("Added Points to ProgressManager");
+                    // Do NOT remove here, removal deferred until fade completes
+                }
+
+                return order;  // Return the matched order (may or may not be full)
+            }
+        }
+
+        Debug.Log("No compatible order found for swipe.");
+        return null;
+    }
+
+    public void FulfillOrder(Sprite sprite)
     {
         if (orderQueue.Count == 0) return;
 
@@ -78,46 +251,26 @@ public class OrderManager : MonoBehaviour
 
         for (int i = 0; i < orders.Length; i++)
         {
-            if (orders[i].itemName == itemName)
+            if (orders[i].sprite == sprite)
             {
                 orderQueue = new Queue<Order>(orders);
-                orderQueue.Dequeue(); // Remove fulfilled order
+                orderQueue.Dequeue();
 
                 foreach (Transform child in orderPanel)
                 {
                     OrderUI ui = child.GetComponent<OrderUI>();
-                    if (ui != null && ui.order.itemName == itemName)
+                    if (ui != null && ui.order.sprite == sprite)
                     {
                         Destroy(child.gameObject);
                         break;
                     }
                 }
 
-                Debug.Log($"Fulfilled: {itemName}");
+                Debug.Log($"Fulfilled: {sprite.name}");
                 return;
             }
         }
 
         Debug.Log("No matching order found.");
     }
-
-    void RemoveOrder(Order order)
-    {
-        orderQueue = new Queue<Order>(orderQueue.ToArray());
-        Debug.Log($"Order expired: {order.itemName}");
-    }
-
-    void OnGUI()
-    {
-        if (GUI.Button(new Rect(10, 10, 160, 30), "Fulfill First Order"))
-        {
-            if (orderQueue.Count > 0)
-            {
-                string itemToFulfill = orderQueue.Peek().itemName;
-                FulfillOrder(itemToFulfill);
-            }
-        }
-    }
-
-
 }

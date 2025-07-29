@@ -1,14 +1,18 @@
+using UnityEngine;
+
 [System.Serializable]
 public class Order
 {
-    public string itemName;
-    public float timeToComplete;
+    public Sprite sprite;
+    public int requiredCapacity;
     public float timeRemaining;
+    public int currentFill;
 
-    public Order(string itemName, float timeToComplete)
+    public Order(Sprite sprite, int requiredCapacity, float timeRemaining)
     {
-        this.itemName = itemName;
-        this.timeToComplete = timeToComplete;
-        this.timeRemaining = timeToComplete;
+        this.sprite = sprite;
+        this.requiredCapacity = requiredCapacity;
+        this.timeRemaining = timeRemaining;
+        this.currentFill = 0;
     }
 }

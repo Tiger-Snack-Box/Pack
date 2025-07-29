@@ -5,7 +5,6 @@ using System.Collections;
 public class HealthBarDecay : MonoBehaviour
 {
     public RectTransform healthBar; // Assign in Inspector
-    public float relativeOffset = 0.05f; // 5% down from the top
     public Slider slider;
     private float currentHealth;
 
@@ -21,9 +20,6 @@ public class HealthBarDecay : MonoBehaviour
     void AdjustHealthBarPosition()
     {
         float screenHeight = Screen.height;
-        float yOffset = screenHeight * relativeOffset;
-
-        healthBar.anchoredPosition = new Vector2(healthBar.anchoredPosition.x, -yOffset);
     }
 
     // Set the max health and initial slider value
