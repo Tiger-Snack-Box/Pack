@@ -19,9 +19,6 @@ public class GridScript : MonoBehaviour
 
     private bool isDragging = false;
     private HashSet<GameObject> selectedTiles = new HashSet<GameObject>();
-    private List<GameObject> movingTiles = new List<GameObject>();
-    private Vector2 currentTargetPosition;
-    private Order matchedOrder = null;
 
     private Color highlightColor = Color.yellow;
     private Color defaultColor = Color.white;
@@ -32,11 +29,30 @@ public class GridScript : MonoBehaviour
     [SerializeField] private float followSpeed = 10f;
     [SerializeField] private float moveToTargetSpeed = 4f;
 
+    private Dictionary<GameObject, Vector3> originalPositions = new Dictionary<GameObject, Vector3>();
+
+    // Manage active coroutine per tile to prevent conflicts
+    private Dictionary<GameObject, Coroutine> activeTileCoroutines = new Dictionary<GameObject, Coroutine>();
+
+    // Swipe data to track current swipes with their matched orders and tiles
+    private class SwipeData
+    {
+        public Order matchedOrder;
+        public List<GameObject> tiles;
+
+        public SwipeData(Order order, List<GameObject> tiles)
+        {
+            this.matchedOrder = order;
+            this.tiles = tiles;
+        }
+    }
+
+    private List<SwipeData> ongoingSwipes = new List<SwipeData>();
+
     void Start()
     {
         gridMatrix = new List<List<GameObject>>();
         GenerateGrid();
-        currentTargetPosition = GetDefaultTargetPosition();
     }
 
     void Update()
@@ -47,11 +63,6 @@ public class GridScript : MonoBehaviour
         {
             MoveSelectedTiles();
         }
-
-        if (movingTiles.Count > 0)
-        {
-            MoveTilesToTarget();
-        }
     }
 
     private Sprite GetRandomItemSprite()
@@ -61,7 +72,7 @@ public class GridScript : MonoBehaviour
         return itemSprites[index];
     }
 
-    [SerializeField] private GameObject gridBackground; // Assign your grid background GameObject here in inspector
+    [SerializeField] private GameObject gridBackground;
 
     void GenerateGrid()
     {
@@ -72,8 +83,8 @@ public class GridScript : MonoBehaviour
         tileWidth = 0f;
 
         gridMatrix = new List<List<GameObject>>();
+        originalPositions.Clear();
 
-        // Instantiate tiles and calculate tileWidth based on first tile sprite scale
         for (int x = 0; x < width; x++)
         {
             List<GameObject> row = new List<GameObject>();
@@ -90,7 +101,6 @@ public class GridScript : MonoBehaviour
                     sr.sprite = GetRandomItemSprite();
                     sr.color = defaultColor;
 
-                    // Set sorting layer and order so tile appears above background
                     sr.sortingLayerName = "Tiles";
                     sr.sortingOrder = 10;
 
@@ -102,7 +112,6 @@ public class GridScript : MonoBehaviour
                             float scale = tileHeight / spriteHeight;
                             tile.transform.localScale = new Vector3(scale, scale, 1f);
 
-                            // Calculate tileWidth based on scaled sprite width only once (on first tile)
                             if (tileWidth == 0f)
                             {
                                 tileWidth = sr.sprite.bounds.size.x * scale;
@@ -110,7 +119,9 @@ public class GridScript : MonoBehaviour
                         }
                     }
                 }
+
                 row.Add(tile);
+                originalPositions[tile] = tile.transform.position;
             }
             gridMatrix.Add(row);
         }
@@ -125,21 +136,17 @@ public class GridScript : MonoBehaviour
                 float targetGridWidth = tileWidth * width;
                 float targetGridHeight = tileHeight * height;
 
-                // Calculate scale factors
-                float scaleX = targetGridWidth * 225/100/ bgSize.x;
-                float scaleY = targetGridHeight * 225/100/ bgSize.y;
+                float scaleX = targetGridWidth * 225 / 100 / bgSize.x;
+                float scaleY = targetGridHeight * 225 / 100 / bgSize.y;
 
-                // Apply uniform scale
                 float uniformScale = Mathf.Min(scaleX, scaleY);
                 gridBackground.transform.localScale = new Vector3(uniformScale, uniformScale, 1f);
 
-                // Correct position: center of the tile grid
                 Vector3 gridCenter = new Vector3((width - 1) / 2f, (height - 1) / 2f, 1f);
                 gridCenter.x -= xOffset;
-                gridCenter.y -= yOffset+.2f;
+                gridCenter.y -= yOffset + .2f;
                 gridBackground.transform.position = gridCenter;
 
-                // Ensure background renders behind
                 bgRenderer.sortingLayerName = "Background";
                 bgRenderer.sortingOrder = 0;
             }
@@ -201,7 +208,7 @@ public class GridScript : MonoBehaviour
         foreach (Collider2D hit in hits)
         {
             GameObject tile = hit.gameObject;
-            if (!selectedTiles.Contains(tile) && !movingTiles.Contains(tile))
+            if (!selectedTiles.Contains(tile))
             {
                 selectedTiles.Add(tile);
                 HighlightTile(tile);
@@ -231,9 +238,22 @@ public class GridScript : MonoBehaviour
             fingerPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         }
 
+        List<GameObject> destroyedTiles = new List<GameObject>();
+
         foreach (GameObject tile in selectedTiles)
         {
+            if (tile == null)
+            {
+                destroyedTiles.Add(tile);
+                continue;
+            }
+
             tile.transform.position = Vector2.Lerp(tile.transform.position, fingerPos, followSpeed * Time.deltaTime);
+        }
+
+        foreach (GameObject destroyedTile in destroyedTiles)
+        {
+            selectedTiles.Remove(destroyedTile);
         }
     }
 
@@ -249,12 +269,14 @@ public class GridScript : MonoBehaviour
                 swipedSprites.Add(sr.sprite);
         }
 
-        // Get the order matched for this swipe, but do NOT remove yet
-        matchedOrder = orderManager.ProcessSwipeGetOrder(swipedSprites);
+        Order matchedOrder = orderManager.ProcessSwipeGetOrder(swipedSprites);
+
+        List<GameObject> tilesToMove = new List<GameObject>(selectedTiles);
+        selectedTiles.Clear();
 
         if (matchedOrder != null)
         {
-            // Find the OrderUI transform for matchedOrder
+            Vector2 targetPosition;
             Transform orderTransform = null;
             foreach (Transform child in orderManager.orderPanel)
             {
@@ -268,56 +290,128 @@ public class GridScript : MonoBehaviour
 
             if (orderTransform != null)
             {
-                // Convert UI position (Canvas space) to world space
                 Vector3 screenPoint = RectTransformUtility.WorldToScreenPoint(null, orderTransform.position);
                 Vector3 worldPoint = Camera.main.ScreenToWorldPoint(screenPoint);
                 worldPoint.z = 0f;
-                currentTargetPosition = worldPoint;
+                targetPosition = worldPoint;
             }
             else
             {
-                // Fallback default if UI not found
-                currentTargetPosition = GetDefaultTargetPosition();
+                targetPosition = GetDefaultTargetPosition();
+            }
+
+            SwipeData swipeData = new SwipeData(matchedOrder, tilesToMove);
+            ongoingSwipes.Add(swipeData);
+
+            // Move each tile individually with coroutine, then fade/destroy after reaching target
+            foreach (var tile in tilesToMove)
+            {
+                StartTileMovementCoroutine(tile, MoveTileToPosition(tile, targetPosition, () =>
+                {
+                    // On arrival, start fading and destroying tile
+                    for (int x = 0; x < width; x++)
+                    {
+                        for (int y = 0; y < height; y++)
+                        {
+                            if (gridMatrix[x][y] == tile)
+                            {
+                                StartTileMovementCoroutine(tile, FadeAndDestroyTileCoroutine(tile, x, y, swipeData));
+                                return;
+                            }
+                        }
+                    }
+                }));
             }
         }
         else
         {
-            // No compatible order, fly to default position
-            currentTargetPosition = GetDefaultTargetPosition();
-        }
+            // Incompatible swipe - move tiles back to original positions individually
+            foreach (var tile in tilesToMove)
+            {
+                Vector3 originalPos = originalPositions.ContainsKey(tile) ? originalPositions[tile] : tile.transform.position;
 
-        movingTiles.AddRange(selectedTiles);
-        selectedTiles.Clear();
+                // Reset tile color to default immediately (or could do on finish)
+                SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
+                if (sr != null)
+                {
+                    sr.color = defaultColor;
+                }
+
+                StartTileMovementCoroutine(tile, MoveTileToPosition(tile, originalPos));
+            }
+        }
     }
 
-    void MoveTilesToTarget()
+    private void StartTileMovementCoroutine(GameObject tile, IEnumerator coroutine)
     {
-        List<GameObject> finishedMoving = new List<GameObject>();
+        if (tile == null) return;
 
-        foreach (GameObject tile in movingTiles)
+        // Cancel any existing coroutine on this tile
+        if (activeTileCoroutines.TryGetValue(tile, out Coroutine existingCoroutine))
         {
-            tile.transform.position = Vector2.Lerp(tile.transform.position, currentTargetPosition, moveToTargetSpeed * Time.deltaTime);
+            StopCoroutine(existingCoroutine);
+        }
 
-            if (Vector2.Distance(tile.transform.position, currentTargetPosition) < 0.1f)
+        Coroutine newCoroutine = StartCoroutine(CoroutineWrapper(tile, coroutine));
+        activeTileCoroutines[tile] = newCoroutine;
+    }
+
+    private IEnumerator CoroutineWrapper(GameObject tile, IEnumerator coroutine)
+    {
+        yield return coroutine;
+        activeTileCoroutines.Remove(tile);
+    }
+
+    private IEnumerator MoveTileToPosition(GameObject tile, Vector3 targetPosition, System.Action onComplete = null)
+    {
+        if (tile == null)
+        {
+            onComplete?.Invoke();
+            yield break;
+        }
+
+        while (Vector3.Distance(tile.transform.position, targetPosition) > 0.05f)
+        {
+            tile.transform.position = Vector3.Lerp(tile.transform.position, targetPosition, moveToTargetSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        tile.transform.position = targetPosition;
+
+        onComplete?.Invoke();
+    }
+
+    private IEnumerator FadeAndDestroyTileCoroutine(GameObject tile, int x, int y, SwipeData swipeData)
+    {
+        SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            float duration = 0.5f;
+            float elapsed = 0;
+            Color startColor = sr.color;
+
+            while (elapsed < duration)
             {
-                finishedMoving.Add(tile);
+                float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
+                sr.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+                elapsed += Time.deltaTime;
+                yield return null;
             }
         }
 
-        foreach (GameObject tile in finishedMoving)
-        {
-            movingTiles.Remove(tile);
+        Destroy(tile);
+        gridMatrix[x][y] = CreateTileAt(x, y);
 
-            for (int x = 0; x < width; x++)
+        swipeData.tiles.Remove(tile);
+
+        if (swipeData.tiles.Count == 0)
+        {
+            if (swipeData.matchedOrder != null)
             {
-                for (int y = 0; y < height; y++)
-                {
-                    if (gridMatrix[x][y] == tile)
-                    {
-                        StartCoroutine(FadeAndDestroyTile(tile, x, y));
-                    }
-                }
+                OnTilesFadeComplete?.Invoke(swipeData.matchedOrder.sprite);
             }
+
+            ongoingSwipes.Remove(swipeData);
         }
     }
 
@@ -335,7 +429,6 @@ public class GridScript : MonoBehaviour
             sr.sprite = GetRandomItemSprite();
             sr.color = defaultColor;
 
-            // --- Quick fix: Set sorting layer and order for new tiles ---
             sr.sortingLayerName = "Tiles";
             sr.sortingOrder = 10;
 
@@ -352,36 +445,9 @@ public class GridScript : MonoBehaviour
             }
         }
 
+        originalPositions[newTile] = pos;
+
         return newTile;
-    }
-
-    IEnumerator FadeAndDestroyTile(GameObject tile, int x, int y)
-    {
-        SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
-        if (sr != null)
-        {
-            float duration = 0.5f;
-            float elapsed = 0;
-            Color startColor = sr.color;
-
-            while (elapsed < duration)
-            {
-                float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
-                sr.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            Destroy(tile);
-            gridMatrix[x][y] = CreateTileAt(x, y);
-        }
-
-        // Check if all movingTiles have finished fading
-        if (movingTiles.Count == 0 && matchedOrder != null)
-        {
-            OnTilesFadeComplete?.Invoke(matchedOrder.sprite);
-            matchedOrder = null;
-        }
     }
 
     Vector2 GetDefaultTargetPosition()

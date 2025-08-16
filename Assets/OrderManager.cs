@@ -83,24 +83,26 @@ public class OrderManager : MonoBehaviour
         Order orderToRemove = null;
         foreach (Order order in orderQueue)
         {
-            if (order.sprite == sprite)
+            if (order.sprite == sprite && order.currentFill >= order.requiredCapacity)
             {
                 orderToRemove = order;
                 break;
             }
         }
 
-        // Only remove if the order is FULL
-        if (orderToRemove != null && orderToRemove.currentFill >= orderToRemove.requiredCapacity)
+        if (orderToRemove != null)
         {
-            RemoveOrder(orderToRemove);
+            RemoveOrder(orderToRemove); // Only remove here
         }
     }
+
     public void ProcessSwipe(List<Sprite> swipedItems)
     {
         if (swipedItems == null || swipedItems.Count == 0) return;
 
         Order[] orders = orderQueue.ToArray();
+
+        bool anyOrderFulfilled = false;
 
         foreach (Order order in orders)
         {
@@ -114,25 +116,28 @@ public class OrderManager : MonoBehaviour
 
             int availableCapacity = order.requiredCapacity - order.currentFill;
 
-            // Only accept if swiped count fits capacity
+            // Check if swiped count fits capacity
             if (swipedItems.Count <= availableCapacity)
             {
                 order.currentFill += swipedItems.Count;
                 Debug.Log($"Added {swipedItems.Count} to order {order.sprite.name}, fill {order.currentFill}/{order.requiredCapacity}");
 
-                // Remove ONLY if order is FULL
                 if (order.currentFill >= order.requiredCapacity)
                 {
                     gameProgressManager?.GainPoints();
                     Debug.Log("Added Points to ProgressManager");
                     RemoveOrder(order);  // Remove only full orders
+                    anyOrderFulfilled = true;
                 }
 
-                return; // Only fulfill one order per swipe
+                // Continue to next order (don't return)
             }
         }
 
-        Debug.Log("No compatible order found for swipe.");
+        if (!anyOrderFulfilled)
+        {
+            Debug.Log("No compatible order found for swipe.");
+        }
     }
 
 
@@ -162,8 +167,9 @@ public class OrderManager : MonoBehaviour
     void GenerateRandomOrder()
     {
         // Limit to 4 active orders
-        if (orderQueue.Count >= 4)
+        if (orderPanel.childCount >= 4)
         {
+            Debug.Log("Order queue is full. Skipping spawn.");
             return;
         }
 
